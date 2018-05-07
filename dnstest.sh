@@ -8,9 +8,11 @@ command -v bc > /dev/null || { echo "bc was not found. Please install bc."; exit
 NAMESERVERS=`cat /etc/resolv.conf | grep ^nameserver | cut -d " " -f 2 | sed 's/\(.*\)/&#&/'`
 
 PROVIDERS="
-1.1.1.1#cloudflare 
+1.1.1.1#cloudflare
+1.0.0.1#cloudflare2 
 4.2.2.1#level3 
 8.8.8.8#google 
+8.8.4.4#google2 
 9.9.9.9#quad9 
 80.80.80.80#freenom 
 208.67.222.123#opendns 
@@ -19,7 +21,12 @@ PROVIDERS="
 77.88.8.7#yandex 
 176.103.130.132#adguard 
 156.154.70.3#neustar 
-8.26.56.26#comodo
+8.26.56.26#comodo 
+84.200.69.80#DNSWATCH 
+84.200.70.40#DNSWATCH 
+85.214.20.141#Digitalcourage 
+213.73.91.35#CCC 
+194.150.168.168#CCC(withDNSSEC)
 "
 
 # Domains to test. Duplicated domains are ok
