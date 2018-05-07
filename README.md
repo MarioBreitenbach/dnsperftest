@@ -3,9 +3,9 @@
 Shell script to test the performance of the most popular DNS resolvers from your location.
 
 Includes by default:
- * CloudFlare 1.1.1.1
+ * CloudFlare 1.1.1.1 1.0.0.1
  * Level3 4.2.2.1
- * Google 8.8.8.8
+ * Google 8.8.8.8 8.8.4.4
  * Quad9 9.9.9.9
  * Freenom 80.80.80.80
  * OpenDNS
@@ -15,6 +15,10 @@ Includes by default:
  * AdGuard
  * Neustar
  * Comodo
+ * DNS WATCH
+ * Chaos Computer Club
+ * Chaos Computer Club (with DNSSEC)
+ * Digitalcourage
 
 # Required 
 
