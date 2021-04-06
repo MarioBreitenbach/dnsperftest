@@ -24,9 +24,6 @@ PROVIDERS="
 8.26.56.26#comodo 
 84.200.69.80#DNSWATCH 
 84.200.70.40#DNSWATCH 
-85.214.20.141#Digitalcourage 
-213.73.91.35#CCC 
-194.150.168.168#CCC(withDNSSEC)
 "
 
 # Domains to test. Duplicated domains are ok
