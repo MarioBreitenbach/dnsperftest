@@ -1,37 +1,96 @@
 #!/usr/bin/env bash
 
-command -v bc > /dev/null || { echo "bc was not found. Please install bc."; exit 1; }
-{ command -v drill > /dev/null && dig=drill; } || { command -v dig > /dev/null && dig=dig; } || { echo "dig was not found. Please install dnsutils."; exit 1; }
 
+command -v bc > /dev/null || { echo "error: bc was not found. Please install bc."; exit 1; }
+{ command -v drill > /dev/null && dig=drill; } || { command -v dig > /dev/null && dig=dig; } || { echo "error: dig was not found. Please install dnsutils."; exit 1; }
 
 
 NAMESERVERS=`cat /etc/resolv.conf | grep ^nameserver | cut -d " " -f 2 | sed 's/\(.*\)/&#&/'`
 
-PROVIDERS="
-1.1.1.1#cloudflare
-1.0.0.1#cloudflare2 
-4.2.2.1#level3 
-8.8.8.8#google 
-8.8.4.4#google2 
-9.9.9.9#quad9 
-80.80.80.80#freenom 
-208.67.222.123#opendns 
-199.85.126.20#norton 
-185.228.168.168#cleanbrowsing 
-77.88.8.7#yandex 
-176.103.130.132#adguard 
-156.154.70.3#neustar 
-8.26.56.26#comodo 
+PROVIDERSV4="
+1.1.1.1#Cloudflare 
+1.0.0.1#Cloudflare-2 
+8.8.8.8#Google 
+8.8.4.4#Google-2 
+9.9.9.9#Quad9 
+149.112.112.112#Quad9-2 
+76.76.2.0#ControlD 
+76.76.10.0#ControlD-2 
+208.67.222.222#OpenDNS 
+208.67.220.220#OpenDNS-2 
+185.228.168.9#CleanBrowsing 
+185.228.169.9#CleanBrowsing-2 
+76.76.19.19#AlternateDNS 
+76.223.122.150#AlternateDNS-2 
+94.140.14.14#AdGuard 
+94.140.15.15#AdGuard-2 
+77.88.8.7#Yandex 
+77.88.8.1#Yandex-2 
+8.26.56.26#Comodo 
+8.20.247.20#Comodo-2 
 84.200.69.80#DNSWATCH 
-84.200.70.40#DNSWATCH 
+84.200.70.40#DNSWATCH-2 
+80.80.80.80#Freenom 
+80.80.81.81#Freenom-2 
+4.2.2.1#Level3 
 "
+
+PROVIDERSV6="
+2606:4700:4700::1111#Cloudflare-IPv6 
+2606:4700:4700::1001#Cloudflare-IPv6-2 
+2001:4860:4860::8888#Google-IPv6 
+2001:4860:4860::8844#Google-IPv6-2 
+2620:fe::fe#Quad9-IPv6 
+2620:fe::9#Quad9-IPv6-2 
+2606:1a40::#ControlD-IPv6 
+2606:1a40:1::#ControlD-IPv6-2 
+2620:119:35::35#OpenDNS-IPv6 
+2620:119:53::53#OpenDNS-IPv6-2 
+2a0d:2a00:1::2#CleanBrowsing-IPv6 
+2a0d:2a00:2::2#CleanBrowsing-IPv6-2 
+2602:fcbc::ad#AlternateDNS-IPv6 
+2602:fcbc:2::ad#AlternateDNS-IPv6-2 
+2a10:50c0::ad1:ff#AdGuard-IPv6 
+2a10:50c0::ad2:ff#AdGuard-IPv6-2
+2001:1608:10:25::1c04:b12f#DNSWATCH-IPv6
+2001:1608:10:25::9249:d69b#DNSWATCH-IPV6-2
+"
+
+# Testing for IPv6
+$dig +short +tries=1 +time=2 +stats @2a0d:2a00:1::1 www.google.com |grep 216.239.38.120 >/dev/null 2>&1
+if [ $? = 0 ]; then
+    hasipv6="true"
+fi
+
+providerstotest=$PROVIDERSV4
+
+if [ "x$1" = "xipv6" ]; then
+    if [ "x$hasipv6" = "x" ]; then
+        echo "error: IPv6 support not found. Unable to do the ipv6 test."; exit 1;
+    fi
+    providerstotest=$PROVIDERSV6
+
+elif [ "x$1" = "xipv4" ]; then
+    providerstotest=$PROVIDERSV4
+
+elif [ "x$1" = "xall" ]; then
+    if [ "x$hasipv6" = "x" ]; then
+        providerstotest=$PROVIDERSV4
+    else
+        providerstotest="$PROVIDERSV4 $PROVIDERSV6"
+    fi
+else
+    providerstotest=$PROVIDERSV4
+fi
+
+    
 
 # Domains to test. Duplicated domains are ok
 DOMAINS2TEST="www.google.com amazon.com facebook.com www.youtube.com www.reddit.com  wikipedia.org twitter.com gmail.com www.google.com whatsapp.com"
 
 
 totaldomains=0
-printf "%-18s" ""
+printf "%-21s" ""
 for d in $DOMAINS2TEST; do
     totaldomains=$((totaldomains + 1))
     printf "%-8s" "test$totaldomains"
@@ -40,12 +99,12 @@ printf "%-8s" "Average"
 echo ""
 
 
-for p in $NAMESERVERS $PROVIDERS; do
+for p in $NAMESERVERS $providerstotest; do
     pip=${p%%#*}
     pname=${p##*#}
     ftime=0
 
-    printf "%-18s" "$pname"
+    printf "%-21s" "$pname"
     for d in $DOMAINS2TEST; do
         ttime=`$dig +tries=1 +time=2 +stats @$pip $d |grep "Query time:" | cut -d : -f 2- | cut -d " " -f 2`
         if [ -z "$ttime" ]; then
@@ -58,7 +117,7 @@ for p in $NAMESERVERS $PROVIDERS; do
         printf "%-8s" "$ttime ms"
         ftime=$((ftime + ttime))
     done
-    avg=`bc -lq <<< "scale=2; $ftime/$totaldomains"`
+    avg=`bc -l <<< "scale=2; $ftime/$totaldomains"`
 
     echo "  $avg"
 done
