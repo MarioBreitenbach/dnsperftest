@@ -3,19 +3,19 @@
 Shell script to test the performance of the most popular DNS resolvers from your location.
 
 Includes by default:
- * CloudFlare 1.1.1.1
- * Level3 4.2.2.1
- * Google 8.8.8.8
- * Quad9 9.9.9.9
- * Freenom 80.80.80.80
+ * Cloudflare
+ * Google
+ * Quad9
+ * Control D
  * OpenDNS
- * Norton
  * CleanBrowsing
- * Yandex
+ * AlternateDNS
  * AdGuard
- * Neustar
+ * Yandex
  * Comodo
- * NextDNS
+ * DNS.Watch
+ * Freenom
+ * Level3
 
 # Required 
 
